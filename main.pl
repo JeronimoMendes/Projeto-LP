@@ -7,11 +7,10 @@
 % Imports commun code and puzzles
 :-consult(codigo_comum).
 
-/*
-**
-**  MAIN PREDICATES
-**
-*/
+
+%  ###################
+%  MAIN PREDICATES
+%  ###################
 
 combinacoes_soma(N, Els, Soma, Combs):-
 	findall(Combs,combinacao(N,Els,Combs),X),
@@ -19,17 +18,17 @@ combinacoes_soma(N, Els, Soma, Combs):-
 
 
 permutacoes_soma(N, Els, Soma, Perms):-
-   combinacoes_soma(N, Els, Soma, X),
-   findall(Y, maplist(permutation, X, Y), Z),
-   append(Z, A),
-   list_to_set(A, Perms).
+   combinacoes_soma(N, Els, Soma, CombinacoesSoma),
+   findall(Y, maplist(permutation, CombinacoesSoma, Y), PermsNested),
+   append(PermsNested, PermsDups), % unest each permutation
+   list_to_set(PermsDups, Perms). % remove duplicates
       
 
-/*
-**
-**  AUXILIAR PREDICATES
-**
-*/
+% espaco_fila(Fila, Esp, H_V) :- 
+   
+%  ###################
+%  AUXILIAR PREDICATES
+%  ###################
 
 % Helper predicates. They change the order of arguments so that they
 % can be used in excluce/3, include/3...
