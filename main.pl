@@ -40,8 +40,6 @@ espacos_fila(H_V, Fila, Espacos) :-
    Espacos = [].
    
 
-   
-
 espaco_fila(Fila, Esp, H_V) :-
    espacos_fila(H_V, Fila, Espacos),
    member(Esp, Espacos).
@@ -53,6 +51,13 @@ espacos_puzzle(Puzzle, Espacos) :-
    maplist(espacos_fila(v), PuzzleTrans, EspacosV),
    append(EspacosH, EspacosV, EspacosAux),
    append(EspacosAux, Espacos).
+
+
+espacos_com_posicoes_comuns(Espacos, Esp, Esps_com) :-
+   positionsEspaco(Esp, PositionsEsp),
+   bagof(Pos, X^PositionEsp^(member(PositionEsp, PositionsEsp) ,member(Pos, Espacos) ,positionsEspaco(Pos, X), isInList(X, PositionEsp)), Esps_comDups),
+   removeElement(Esp, Esps_comDups, Esps_com).
+
 
 
 
@@ -156,3 +161,27 @@ nextIsBlock(List, El) :-
    nextto(El, Y, AuxList),
    is_list(Y).
    
+
+% Returns the positions of a espaco structure
+positionsEspaco(espaco(_, Positions), Positions).
+
+
+% Checks if list is sublist
+isSublist([], _ ).
+isSublist([X|XS], [X|XSS]) :- isSublist(XS, XSS).
+isSublist([X|XS], [_|XSS]) :- isSublist([X|XS], XSS).
+
+
+% Checks if element is in the list
+isInList(List, El) :-
+   member(X, List),
+   El == X.
+
+
+% Removes all occurrences of an element in a list
+removeElement(_X, [], []).
+removeElement(X, [X|Y], Z) :-
+   removeElement(X, Y, Z).
+removeElement(X, [F|Y], [F|Z]) :-
+   dif(X, F),
+   removeElement(X, Y, Z).
