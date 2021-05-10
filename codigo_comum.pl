@@ -1,4 +1,3 @@
-
 :- use_module(library(clpfd)).
 %-------------------------------------------------------------------------------
 % mat_transposta(Matriz, Transp) significa que Transp e' a transposta de Matriz

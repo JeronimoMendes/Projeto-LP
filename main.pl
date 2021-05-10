@@ -27,19 +27,33 @@ permutacoes_soma(N, Els, Soma, Perms):-
 espacos_fila(H_V, Fila, Espacos) :- 
    getBlocks(Fila, Aux),
    maplist(substituteSpace, Fila, Aux2), % substitues free variables with "free"
-   listOfIndices(Aux2, Aux,Indices),
-   getSpaces(Fila, Indices, Spaces),
+   listOfIndices(Aux2, Aux,IndicesAux),
+   sort(IndicesAux, Indices),
+   getSpaces(Fila, Indices, Spaces) -> 
    exclude(nextIsBlock(Aux2), Aux, ImportantBlocks),
-   (H_V == v -> maplist(getVerticalValue, ImportantBlocks, Values)
+   (H_V == v -> maplist(getVerticalValue, ImportantBlocks, ValuesAux)
    ;
-   maplist(getHorizontalValue, ImportantBlocks, Values) 
+   maplist(getHorizontalValue, ImportantBlocks, ValuesAux) 
    ),
-   maplist(createSpaceStruct, Values, Spaces, Espacos).
+   exclude(==(0), ValuesAux, Values),
+   maplist(createSpaceStruct, Values, Spaces, Espacos);
+   Espacos = [].
+   
+
    
 
 espaco_fila(Fila, Esp, H_V) :-
    espacos_fila(H_V, Fila, Espacos),
    member(Esp, Espacos).
+
+
+espacos_puzzle(Puzzle, Espacos) :-
+   maplist(espacos_fila(h), Puzzle, EspacosH),
+   mat_transposta(Puzzle, PuzzleTrans),
+   maplist(espacos_fila(v), PuzzleTrans, EspacosV),
+   append(EspacosH, EspacosV, EspacosAux),
+   append(EspacosAux, Espacos).
+
 
 
 %  ###################
@@ -70,12 +84,16 @@ getSpaces(List, Indices, Spaces) :-
    append(Indices, [Length1], ListAux),
    appendFirst(1, ListAux, ListAux2),
    bagof(X, listOf_(List, ListAux2, X), SpacesWithNulls),
-   removeNth1(SpacesWithNulls, 2, SpacesWithNulls2),
-   exclude(==([]), SpacesWithNulls2, Spaces). % Removes null lists
+   exclude(==([]), SpacesWithNulls, SpacesWithDups), % Removes null lists
+   list_to_set(SpacesWithDups, Spaces).
    
 
 % Returns a espaco struct given the square value (Index) and the list of spaces
 createSpaceStruct(Index, Space, Output) :- Output = espaco(Index, Space).
+
+
+% Returns the number of occurrences of a given element in a list
+occurrences_of(List, X, Count) :- aggregate_all(count, member(X, List), Count).
 
 
 % Swaps head with tail
