@@ -27,19 +27,20 @@ permutacoes_soma(N, Els, Soma, Perms):-
 espacos_fila(H_V, Fila, Espacos) :- 
    getBlocks(Fila, Aux),
    maplist(substituteSpace, Fila, Aux2), % substitues free variables with "free"
-   %writeln(Aux2),
    listOfIndices(Aux2, Aux,Indices),
-   %writeln(Indices),
    getSpaces(Fila, Indices, Spaces),
-   %writeln(Spaces),
    exclude(nextIsBlock(Aux2), Aux, ImportantBlocks),
    (H_V == v -> maplist(getVerticalValue, ImportantBlocks, Values)
    ;
    maplist(getHorizontalValue, ImportantBlocks, Values) 
    ),
    maplist(createSpaceStruct, Values, Spaces, Espacos).
-   %writeln(Espacos).
    
+
+espaco_fila(Fila, Esp, H_V) :-
+   espacos_fila(H_V, Fila, Espacos),
+   member(Esp, Espacos).
+
 
 %  ###################
 %  AUXILIAR PREDICATES
