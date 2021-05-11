@@ -59,7 +59,9 @@ espacos_com_posicoes_comuns(Espacos, Esp, Esps_com) :-
    removeElement(Esp, Esps_comDups, Esps_com).
 
 
-
+permutacoes_soma_espacos(Espacos, Perms_soma) :-
+   bagof(Perm, Perm^Espaco^(member(Espaco, Espacos), permutacoes_soma_espaco(Espaco, Perm)), Perms_soma).
+   
 
 %  ###################
 %  AUXILIAR PREDICATES
@@ -166,6 +168,10 @@ nextIsBlock(List, El) :-
 positionsEspaco(espaco(_, Positions), Positions).
 
 
+% Returns the value of a espaco structure
+valueEspaco(espaco(Value, _), Value).
+
+
 % Checks if list is sublist
 isSublist([], _ ).
 isSublist([X|XS], [X|XSS]) :- isSublist(XS, XSS).
@@ -185,3 +191,12 @@ removeElement(X, [X|Y], Z) :-
 removeElement(X, [F|Y], [F|Z]) :-
    dif(X, F),
    removeElement(X, Y, Z).
+
+
+% Same thing as permutacoes_soma_espacos/2, but only for a espaco, rather than a list of espaco's
+permutacoes_soma_espaco(Espaco, Perms_soma) :-
+   valueEspaco(Espaco, Sum),
+   positionsEspaco(Espaco, Positions),
+   length(Positions, Length),
+   permutacoes_soma(Length, [1, 2, 3, 4, 5, 6, 7, 8, 9], Sum, Perms),
+   Perms_soma = [Espaco, Perms].
