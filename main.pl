@@ -19,10 +19,8 @@ combinacoes_soma(N, Els, Soma, Combs):-
 
 permutacoes_soma(N, Els, Soma, Perms):-
    combinacoes_soma(N, Els, Soma, CombinacoesSoma),
-   findall(Y, maplist(permutation, CombinacoesSoma, Y), PermsNested),
-   append(PermsNested, PermsDups), % unest each permutation
-   list_to_set(PermsDups, Perms). % remove duplicates
-      
+   setof(Perm, permutationsOfCombination(CombinacoesSoma, Perm), Perms).
+
 
 espacos_fila(H_V, Fila, Espacos) :- 
    getBlocks(Fila, Aux),
@@ -35,7 +33,7 @@ espacos_fila(H_V, Fila, Espacos) :-
    ;
    maplist(getHorizontalValue, ImportantBlocks, ValuesAux) 
    ),
-   exclude(==(0), ValuesAux, Values),
+   exclude(==(0), ValuesAux, Values), % has to be changed to pass test 6
    maplist(createSpaceStruct, Values, Spaces, Espacos);
    Espacos = [].
    
@@ -61,11 +59,43 @@ espacos_com_posicoes_comuns(Espacos, Esp, Esps_com) :-
 
 permutacoes_soma_espacos(Espacos, Perms_soma) :-
    bagof(Perm, Perm^Espaco^(member(Espaco, Espacos), permutacoes_soma_espaco(Espaco, Perm)), Perms_soma).
+
+
+permutacao_possivel_espaco(Perm, Esp, Espacos, _) :-
+   permutacoes_soma_espaco(Esp, EspPerms),
+   positionsEspaco(Esp, Positions),
+   espacos_com_posicoes_comuns(Espacos, Esp, EspsCom),
+   permutacoes_soma_espacos(EspsCom, EspsComPerm),
+   permsPermsEspaco(EspPerms, PermsAux), append(PermsAux, Perms),
+
+   member(Positions, Perms), % iterates each position in the permutations
+
+   % Tests if the position is valid for each espaco in common
+   forall(member(PossibleEspsPerm, EspsComPerm), positionIsPossibleInEspaco(PossibleEspsPerm)),
+
+   Perm = Positions.
+
+
+
    
+
+
 
 %  ###################
 %  AUXILIAR PREDICATES
 %  ###################
+
+% Tests if a position (ex: [3, 2]) is valid in a list of permutations of a espaco 
+% (ex: [espaco(5, [P1, P2]), [...,...], ...])
+positionIsPossibleInEspaco(PossibleEspsPerm) :-
+   variablesPermsEspaco(PossibleEspsPerm, PossiblePerm),
+
+   permsPermsEspaco(PossibleEspsPerm, ComPermsAux), append(ComPermsAux, ComPerms),
+
+   member(ComPerm, ComPerms),
+
+   subsumes_term(PossiblePerm, ComPerm),!.
+
 
 % Helper predicates. They change the order of arguments so that they
 % can be used in excluce/3, include/3...
@@ -74,6 +104,13 @@ list_sum_helper(Sum, List) :- sum_list(List, Sum).
 lenght_helper(Length, List) :- length(List, Length).
 
 append_helper(L3, L2, L1) :- append(L1, L2, L3).
+
+
+% Returns a permutation of a list of combinations.
+permutationsOfCombination(Combinations, Permutation) :-
+   member(Combination, Combinations),
+   permutation(Combination, Permutation).
+
 
 % Determines if a given block is null ([0,0])
 isNullBlock(Block) :- Block == [0,0].
@@ -200,3 +237,15 @@ permutacoes_soma_espaco(Espaco, Perms_soma) :-
    length(Positions, Length),
    permutacoes_soma(Length, [1, 2, 3, 4, 5, 6, 7, 8, 9], Sum, Perms),
    Perms_soma = [Espaco, Perms].
+
+
+% Returns permutations from Perms_soma of a permutacoes_soma_espaco
+permsPermsEspaco([_|Perms], Perms).
+
+
+% Returns espaco from Perms_soma of a permutacoes_soma_espaco
+espacoPermsEspaco([Espaco|_], Espaco).
+
+
+% Returns variables of espaco from Perms_soma of a permutacoes_soma_espaco
+variablesPermsEspaco([espaco(_, Var)|_], Var).
