@@ -61,6 +61,7 @@ permutacoes_soma_espacos(Espacos, Perms_soma) :-
    bagof(Perm, Perm^Espaco^(member(Espaco, Espacos), permutacoes_soma_espaco(Espaco, Perm)), Perms_soma).
 
 
+% Testado
 permutacao_possivel_espaco(Perm, Esp, Espacos, _) :-
    permutacoes_soma_espaco(Esp, EspPerms),
    positionsEspaco(Esp, Positions),
@@ -75,22 +76,24 @@ permutacao_possivel_espaco(Perm, Esp, Espacos, _) :-
 
    Perm = Positions.
 
-
+% Testado
 permutacoes_possiveis_espaco(Espacos, _, Esp, Perms_poss) :-
    findall(Perm, permutacao_possivel_espaco(Perm, Esp, Espacos, Perms_poss), Perms),
    positionsEspaco(Esp, VarList),
    append([VarList], [Perms], Perms_poss).
    
-
+% Testado
 permutacoes_possiveis_espacos(Espacos, Perms_poss_esps) :-
    bagof(Perms, Espaco^Perms^(member(Espaco, Espacos), permutacoes_possiveis_espaco(Espacos, _, Espaco, Perms)), Perms_poss_esps).
 
 
 numeros_comuns(Lst_Perms, Numeros_comuns) :-
-   mat_transposta(Lst_Perms, List),
-   findall(NumCom, (member(Sublist, List), numeros_comuns_aux(List, Sublist, NumCom)), Numeros_comuns).
+   mat_transposta(Lst_Perms, List), 
+   findall(NumCom, (member(Sublist, List), nth1(Count, List, Sublist), numeros_comuns_aux(Sublist, NumCom, Count)), Numeros_comunsDups),
+   list_to_set(Numeros_comunsDups, Numeros_comuns). % Remove any duplicates
    
 
+%atribui_comuns(Perms_Possiveis) :-
 
 
 
@@ -99,11 +102,10 @@ numeros_comuns(Lst_Perms, Numeros_comuns) :-
 %  AUXILIAR PREDICATES
 %  ###################
 
-numeros_comuns_aux(List, Sublist, Output) :-
+numeros_comuns_aux(Sublist, Output, Count) :-
    same(Sublist),
-   nth1(Index, List, Sublist),
    nth1(1, Sublist, Element),
-   Output = (Index, Element),!.
+   Output = (Count, Element),!.
 
 
 % Checks if the elements in a list are all the same
