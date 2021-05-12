@@ -86,9 +86,30 @@ permutacoes_possiveis_espacos(Espacos, Perms_poss_esps) :-
    bagof(Perms, Espaco^Perms^(member(Espaco, Espacos), permutacoes_possiveis_espaco(Espacos, _, Espaco, Perms)), Perms_poss_esps).
 
 
+numeros_comuns(Lst_Perms, Numeros_comuns) :-
+   mat_transposta(Lst_Perms, List),
+   findall(NumCom, (member(Sublist, List), numeros_comuns_aux(List, Sublist, NumCom)), Numeros_comuns).
+   
+
+
+
+
+
 %  ###################
 %  AUXILIAR PREDICATES
 %  ###################
+
+numeros_comuns_aux(List, Sublist, Output) :-
+   same(Sublist),
+   nth1(Index, List, Sublist),
+   nth1(1, Sublist, Element),
+   Output = (Index, Element),!.
+
+
+% Checks if the elements in a list are all the same
+same([_]).
+same([X,X|T]) :- same([X|T]).
+
 
 % Tests if a position (ex: [3, 2]) is valid in a list of permutations of a espaco 
 % (ex: [espaco(5, [P1, P2]), [...,...], ...])
