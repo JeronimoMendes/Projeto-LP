@@ -29,11 +29,12 @@ espacos_fila(H_V, Fila, Espacos) :-
    sort(IndicesAux, Indices),
    getSpaces(Fila, Indices, Spaces) -> 
    exclude(nextIsBlock(Aux2), Aux, ImportantBlocks),
-   (H_V == v -> maplist(getVerticalValue, ImportantBlocks, ValuesAux)
+   (H_V == v -> maplist(getVerticalValue, ImportantBlocks, Values)
    ;
-   maplist(getHorizontalValue, ImportantBlocks, ValuesAux) 
+   maplist(getHorizontalValue, ImportantBlocks, Values) 
    ),
-   exclude(==(0), ValuesAux, Values), % has to be changed to pass test 6
+   %writeln(Values),
+   %exclude(==(0), ValuesAux, Values), % has to be changed to pass test 6
    maplist(createSpaceStruct, Values, Spaces, Espacos);
    Espacos = [].
    
@@ -225,9 +226,15 @@ getVerticalValue([V|_], V).
 % True is the element next to a given element in a lista is a block
 nextIsBlock(List, El) :-
    maplist(substituteSpace, List, AuxList),
-   nextto(El, Y, AuxList),
-   is_list(Y).
+   (last(El, List) -> true
+   ;
+   nextto(El, Y, AuxList), is_list(Y)).
    
+
+% Checks last element of list
+last(X,[X]).
+ last(X,[_|Z]) :- last(X,Z).
+
 
 % Returns the positions of a espaco structure
 positionsEspaco(espaco(_, Positions), Positions).
