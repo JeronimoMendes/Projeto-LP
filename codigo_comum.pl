@@ -1,4 +1,5 @@
 :- use_module(library(clpfd)).
+:-consult(puzzles_publicos).
 %-------------------------------------------------------------------------------
 % mat_transposta(Matriz, Transp) significa que Transp e' a transposta de Matriz
 %-------------------------------------------------------------------------------

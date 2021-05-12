@@ -76,7 +76,10 @@ permutacao_possivel_espaco(Perm, Esp, Espacos, _) :-
    Perm = Positions.
 
 
-
+permutacoes_possiveis_espaco(Espacos, _, Esp, Perms_poss) :-
+   findall(Perm, permutacao_possivel_espaco(Perm, Esp, Espacos, Perms_poss), Perms),
+   positionsEspaco(Esp, VarList),
+   append([VarList], [Perms], Perms_poss).
    
 
 
