@@ -82,6 +82,8 @@ permutacoes_possiveis_espaco(Espacos, _, Esp, Perms_poss) :-
    append([VarList], [Perms], Perms_poss).
    
 
+permutacoes_possiveis_espacos(Espacos, Perms_poss_esps) :-
+   bagof(Perms, Espaco^Perms^(member(Espaco, Espacos), permutacoes_possiveis_espaco(Espacos, _, Espaco, Perms)), Perms_poss_esps).
 
 
 %  ###################
