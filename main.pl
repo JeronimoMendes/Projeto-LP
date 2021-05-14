@@ -106,6 +106,7 @@ retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis) :-
    bagof([Espaco | [Perms]], possiveisEspPerm(Perms_Possiveis, [Espaco | [Perms]]), Novas_Perms_Possiveis).
    
 
+% Testado
 simplifica(Perms_Possiveis, Novas_Perms_Possiveis) :-
    atribui_comuns(Perms_Possiveis),
    retira_impossiveis(Perms_Possiveis, Novas_Perms_PossiveisAux),
@@ -114,6 +115,12 @@ simplifica(Perms_Possiveis, Novas_Perms_Possiveis) :-
       simplifica(Novas_Perms_PossiveisAux, Novas_Perms_Possiveis)
       ).
 
+
+% Testado
+inicializa(Puzzle, Perms_Possiveis) :-
+   espacos_puzzle(Puzzle, Espacos),
+   permutacoes_possiveis_espacos(Espacos, Perms_PossiveisNotSimplified),
+   simplifica(Perms_PossiveisNotSimplified, Perms_Possiveis).
 
 
 %  ###################
