@@ -106,6 +106,14 @@ retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis) :-
    bagof([Espaco | [Perms]], possiveisEspPerm(Perms_Possiveis, [Espaco | [Perms]]), Novas_Perms_Possiveis).
    
 
+simplifica(Perms_Possiveis, Novas_Perms_Possiveis) :-
+   atribui_comuns(Perms_Possiveis),
+   retira_impossiveis(Perms_Possiveis, Novas_Perms_PossiveisAux),
+   (Novas_Perms_PossiveisAux == Perms_Possiveis -> Novas_Perms_Possiveis = Novas_Perms_PossiveisAux
+      ;
+      simplifica(Novas_Perms_PossiveisAux, Novas_Perms_Possiveis)
+      ).
+
 
 
 %  ###################
