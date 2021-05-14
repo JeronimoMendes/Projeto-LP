@@ -123,13 +123,37 @@ inicializa(Puzzle, Perms_Possiveis) :-
    simplifica(Perms_PossiveisNotSimplified, Perms_Possiveis).
 
 
+% Testado
+escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
+   include(spaceWithVariables, Perms_Possiveis, Perms_PossiveisWithVars),
+   smallestEspPerms(Perms_PossiveisWithVars, Escolha).
+
+
+
 %  ###################
 %  AUXILIAR PREDICATES
-%  ###################
+%  ################### 
+lengthEspPerms([_|[Perms]], Length) :-
+   length(Perms, Length).
+
+
+smallestEspPerms(List, Solution) :-
+   maplist(lengthEspPerms, List, Lengths),
+   min_member(Min, Lengths),
+   nth1(Index, Lengths, Min),
+   nth1(Index, List, Solution).
+
+
+spaceWithVariables([Espaco | _]) :- 
+   include(var, Espaco, Result), 
+   \+ (Result == []). 
+
+
 possiveisEspPerm(Perms_Possiveis, Novas_Perms_Possiveis) :-
    member([Espaco | [Perms]], Perms_Possiveis),
    bagof(Perm, retira_impossiveis_EspPerm([Espaco | [Perms]], Perm), Perms_PossiveisAux),
    Novas_Perms_Possiveis = [Espaco, Perms_PossiveisAux].
+
 
 retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
    member(Perm, Perms),
@@ -137,7 +161,6 @@ retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
       ;
       false% Perm nao eh possivel
    ).
-
 
 
 unifyCommonNums([Vars|[Perms]]) :-
