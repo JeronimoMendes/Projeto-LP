@@ -129,10 +129,27 @@ escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
    smallestEspPerms(Perms_PossiveisWithVars, Escolha).
 
 
+% Testado
+experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
+   permsEspaco(Escolha, Lst_Perms),
+   espEspaco(Escolha, Esp),
+   nth1(Index, Perms_Possiveis, Escolha),
+   member(Perm, Lst_Perms),
+   Esp = Perm,
+   nth1(Index, Perms_Possiveis, Slot),
+   select(Slot, Perms_Possiveis, [Esp, [Perm]], Novas_Perms_Possiveis).
+
+
+
+
 
 %  ###################
 %  AUXILIAR PREDICATES
 %  ################### 
+permsEspaco([_|[Perms]], Perms).
+espEspaco([Esp|_], Esp).
+
+
 lengthEspPerms([_|[Perms]], Length) :-
    length(Perms, Length).
 
