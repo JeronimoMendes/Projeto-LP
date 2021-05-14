@@ -88,20 +88,52 @@ permutacoes_possiveis_espacos(Espacos, Perms_poss_esps) :-
    bagof(Perms, Espaco^Perms^(member(Espaco, Espacos), permutacoes_possiveis_espaco(Espacos, _, Espaco, Perms)), Perms_poss_esps).
 
 
+
+% Testado
 numeros_comuns(Lst_Perms, Numeros_comuns) :-
    mat_transposta(Lst_Perms, List), 
    findall(NumCom, (member(Sublist, List), nth1(Count, List, Sublist), numeros_comuns_aux(Sublist, NumCom, Count)), Numeros_comunsDups),
    list_to_set(Numeros_comunsDups, Numeros_comuns). % Remove any duplicates
    
 
-%atribui_comuns(Perms_Possiveis) :-
+% Testado
+atribui_comuns(Perms_Possiveis) :-
+   maplist(unifyCommonNums, Perms_Possiveis).
 
+
+% Testado
+retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis) :-
+   bagof([Espaco | [Perms]], possiveisEspPerm(Perms_Possiveis, [Espaco | [Perms]]), Novas_Perms_Possiveis).
+   
 
 
 
 %  ###################
 %  AUXILIAR PREDICATES
 %  ###################
+possiveisEspPerm(Perms_Possiveis, Novas_Perms_Possiveis) :-
+   member([Espaco | [Perms]], Perms_Possiveis),
+   bagof(Perm, retira_impossiveis_EspPerm([Espaco | [Perms]], Perm), Perms_PossiveisAux),
+   Novas_Perms_Possiveis = [Espaco, Perms_PossiveisAux].
+
+retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
+   member(Perm, Perms),
+   (subsumes_term(Espaco, Perm) -> Nova_Perm_Possivel = Perm % Perm eh possivel
+      ;
+      false% Perm nao eh possivel
+   ).
+
+
+
+unifyCommonNums([Vars|[Perms]]) :-
+   numeros_comuns(Perms, CommonNums),
+   maplist(unifyCommonNum(Vars), CommonNums).
+
+
+unifyCommonNum(Vars, (Index, X)) :-
+   nth1(Index, Vars, Var),
+   Var = X.
+
 
 numeros_comuns_aux(Sublist, Output, Count) :-
    same(Sublist),
