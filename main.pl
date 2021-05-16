@@ -163,10 +163,20 @@ resolve_aux_recursive(Perms_Possiveis, Novas_Perms_Possiveis) :-
    ).  
 
 
+resolve(Puz) :-
+   inicializa(Puz, Perms_Possiveis),
+   resolve_aux(Perms_Possiveis, _).
+      
 
 %  ###################
 %  AUXILIAR PREDICATES
 %  ################### 
+
+
+applySolution(Space, [Solution|_]) :-
+   positionsEspaco(Space, Vars),
+   Vars = Solution.
+
 
 % True if the length of Perms is equal to Length
 isLengthOfPerms(Length, Perms) :-
