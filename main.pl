@@ -2,15 +2,18 @@
 **  File: projeto.pl
 **  Author: Jeronimo Mendes 99086 LEIC-T 
 **  Description: LP Project. Kakuro puzzle solver.
+**
+**  (I apologize in advance for the poor quality of code, this project definitely wasn't my cup of tea)
+**
 */
 
 % Imports commun code and puzzles
 :-consult(codigo_comum).
 
 
-%  ###################
+%  ###############
 %  MAIN PREDICATES
-%  ###################
+%  ###############
 
 % Returns combinations of N elements from a list Els that sum to Soma
 combinacoes_soma(N, Els, Soma, Combs):-
@@ -136,7 +139,7 @@ escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
    smallestEspPerms(Perms_PossiveisWithVars, Escolha).
 
 
-% Testado
+% Tries a permutation in a given EspacoPerms
 experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
    permsEspaco(Escolha, Lst_Perms),
    espEspaco(Escolha, Esp),
@@ -147,6 +150,7 @@ experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
    select(Slot, Perms_Possiveis, [Esp, [Perm]], Novas_Perms_Possiveis).
 
 
+% Solves a given spaces permutations and returns possible answers
 resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
    length(Perms_Possiveis, LengthInitial),
    resolve_aux_recursive(Perms_Possiveis, Novas_Perms_Possiveis),
@@ -154,15 +158,7 @@ resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
    Length == LengthInitial.
    
     
-
-resolve_aux_recursive(Perms_Possiveis, Novas_Perms_Possiveis) :-
-   (escolhe_menos_alternativas(Perms_Possiveis, Escolha) -> experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_PossiveisAux),
-   simplifica(Novas_Perms_PossiveisAux, Perms_PossiveisSimp), resolve_aux_recursive(Perms_PossiveisSimp, Novas_Perms_Possiveis)
-   ;
-   Novas_Perms_Possiveis = Perms_Possiveis   
-   ).  
-
-
+% Solves a given puzzle
 resolve(Puz) :-
    inicializa(Puz, Perms_Possiveis),
    resolve_aux(Perms_Possiveis, _).
@@ -172,19 +168,19 @@ resolve(Puz) :-
 %  AUXILIAR PREDICATES
 %  ################### 
 
-
-applySolution(Space, [Solution|_]) :-
-   positionsEspaco(Space, Vars),
-   Vars = Solution.
-
-
-% True if the length of Perms is equal to Length
-isLengthOfPerms(Length, Perms) :-
-   forall(member([_|[Perm]], Perms), (length(Perm, LengthPerm), LengthPerm == Length)).
-
+% Recursive part of resolve_aux/2
+resolve_aux_recursive(Perms_Possiveis, Novas_Perms_Possiveis) :-
+   (escolhe_menos_alternativas(Perms_Possiveis, Escolha) -> experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_PossiveisAux),
+   simplifica(Novas_Perms_PossiveisAux, Perms_PossiveisSimp), resolve_aux_recursive(Perms_PossiveisSimp, Novas_Perms_Possiveis)
+   ;
+   Novas_Perms_Possiveis = Perms_Possiveis   
+   ).  
 
 % Returns permutations from a EspacoPerms
 permsEspaco([_|[Perms]], Perms).
+
+
+% Returns espaco from a EspacoPerms
 espEspaco([Esp|_], Esp).
 
 
@@ -207,12 +203,10 @@ spaceWithVariables([Espaco | _]) :-
    \+ (Result == []). 
 
 
-
 possiveisEspPerm(Perms_Possiveis, Novas_Perms_Possiveis) :-
    member([Espaco | [Perms]], Perms_Possiveis),
    bagof(Perm, retira_impossiveis_EspPerm([Espaco | [Perms]], Perm), Perms_PossiveisAux),
    Novas_Perms_Possiveis = [Espaco, Perms_PossiveisAux].
-
 
 
 retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
@@ -227,6 +221,7 @@ retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
 unifyCommonNums([Vars|[Perms]]) :-
    numeros_comuns(Perms, CommonNums),
    maplist(unifyCommonNum(Vars), CommonNums).
+
 
 % Unifies a variable with a common number
 unifyCommonNum(Vars, (Index, X)) :-
@@ -262,10 +257,6 @@ positionIsPossibleInEspaco(PossibleEspsPerm) :-
 % can be used in excluce/3, include/3...
 list_sum_helper(Sum, List) :- sum_list(List, Sum).
 
-lenght_helper(Length, List) :- length(List, Length).
-
-append_helper(L3, L2, L1) :- append(L1, L2, L3).
-
 
 % Returns a permutation of a list of combinations.
 permutationsOfCombination(Combinations, Permutation) :-
@@ -273,14 +264,9 @@ permutationsOfCombination(Combinations, Permutation) :-
    permutation(Combination, Permutation).
 
 
-% Determines if a given block is null ([0,0])
-isNullBlock(Block) :- Block == [0,0].
-
-% Checks if a list is composed of free variables.
-isSpace(List) :- include(nonvar, List, List2), List2 == [].
-
 % Returns the blocks in a file.
 getBlocks(File, List) :- include(is_list, File, List).
+
 
 % Returns spaces in a file.
 getSpaces(List, Indices, Spaces) :-
@@ -295,14 +281,6 @@ getSpaces(List, Indices, Spaces) :-
 
 % Returns a espaco struct given the square value (Index) and the list of spaces
 createSpaceStruct(Index, Space, Output) :- Output = espaco(Index, Space).
-
-
-% Returns the number of occurrences of a given element in a list
-occurrences_of(List, X, Count) :- aggregate_all(count, member(X, List), Count).
-
-
-% Swaps head with tail
-swap([X, Y|T], [Y, X|T]).
 
 
 % Replaces free variables in a list with string "free"
@@ -339,14 +317,6 @@ listOf_(List, Indices, Solution) :-
    sublist(List, X, Y, Solution).
    
 
-% Removes the Nth1(N1) element from a list (As) and returns the result(Bs)
-removeNth1(As,N1,Bs) :-
-   same_length(As,[_|Bs]),
-   append(Prefix,[_|Suffix],As),
-   length([_|Prefix],N1),
-   append(Prefix,Suffix,Bs).
-
-
 % Returns the horizontal value of a given block
 getHorizontalValue([_|[H|_]], H).
 
@@ -365,7 +335,7 @@ nextIsBlock(List, El) :-
 
 % Checks last element of list
 last(X,[X]).
- last(X,[_|Z]) :- last(X,Z).
+last(X,[_|Z]) :- last(X,Z).
 
 
 % Returns the positions of a espaco structure
@@ -374,12 +344,6 @@ positionsEspaco(espaco(_, Positions), Positions).
 
 % Returns the value of a espaco structure
 valueEspaco(espaco(Value, _), Value).
-
-
-% Checks if list is sublist
-isSublist([], _ ).
-isSublist([X|XS], [X|XSS]) :- isSublist(XS, XSS).
-isSublist([X|XS], [_|XSS]) :- isSublist([X|XS], XSS).
 
 
 % Checks if element is in the list
@@ -410,9 +374,6 @@ permutacoes_soma_espaco(Espaco, Perms_soma) :-
 permsPermsEspaco([_|Perms], Perms).
 
 
-% Returns espaco from Perms_soma of a permutacoes_soma_espaco
-espacoPermsEspaco([Espaco|_], Espaco).
-
-
 % Returns variables of espaco from Perms_soma of a permutacoes_soma_espaco
 variablesPermsEspaco([espaco(_, Var)|_], Var).
+
