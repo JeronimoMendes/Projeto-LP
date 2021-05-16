@@ -12,16 +12,19 @@
 %  MAIN PREDICATES
 %  ###################
 
+% Returns combinations of N elements from a list Els that sum to Soma
 combinacoes_soma(N, Els, Soma, Combs):-
 	findall(Combs,combinacao(N,Els,Combs),X),
 	include(list_sum_helper(Soma), X, Combs).
 
 
+% Returns permutations of the combinations of N elements from a list Els that sum to Soma
 permutacoes_soma(N, Els, Soma, Perms):-
    combinacoes_soma(N, Els, Soma, CombinacoesSoma),
    setof(Perm, permutationsOfCombination(CombinacoesSoma, Perm), Perms).
 
 
+% Returns a list of espacos in a given file.
 espacos_fila(H_V, Fila, Espacos) :- 
    getBlocks(Fila, Aux),
    maplist(substituteSpace, Fila, Aux2), % substitues free variables with "free"
@@ -39,11 +42,13 @@ espacos_fila(H_V, Fila, Espacos) :-
    Espacos = [].
    
 
+% Returns a espaco in a given File
 espaco_fila(Fila, Esp, H_V) :-
    espacos_fila(H_V, Fila, Espacos),
    member(Esp, Espacos).
 
 
+% Returns a list of espaco in a given puzzle
 espacos_puzzle(Puzzle, Espacos) :-
    maplist(espacos_fila(h), Puzzle, EspacosH),
    mat_transposta(Puzzle, PuzzleTrans),
@@ -52,17 +57,19 @@ espacos_puzzle(Puzzle, Espacos) :-
    append(EspacosAux, Espacos).
 
 
+% Returns espacos with positions in common
 espacos_com_posicoes_comuns(Espacos, Esp, Esps_com) :-
    positionsEspaco(Esp, PositionsEsp),
    bagof(Pos, X^PositionEsp^(member(PositionEsp, PositionsEsp) ,member(Pos, Espacos) ,positionsEspaco(Pos, X), isInList(X, PositionEsp)), Esps_comDups),
    removeElement(Esp, Esps_comDups, Esps_com).
 
 
+% Returns list of permutations of espaco
 permutacoes_soma_espacos(Espacos, Perms_soma) :-
    bagof(Perm, Perm^Espaco^(member(Espaco, Espacos), permutacoes_soma_espaco(Espaco, Perm)), Perms_soma).
 
 
-% Testado
+% Returns possible permutation of a given espaco.
 permutacao_possivel_espaco(Perm, Esp, Espacos, _) :-
    permutacoes_soma_espaco(Esp, EspPerms),
    positionsEspaco(Esp, Positions),
@@ -77,36 +84,36 @@ permutacao_possivel_espaco(Perm, Esp, Espacos, _) :-
 
    Perm = Positions.
 
-% Testado
+% Returns list of possible permutations of a given espacos.
 permutacoes_possiveis_espaco(Espacos, _, Esp, Perms_poss) :-
    findall(Perm, permutacao_possivel_espaco(Perm, Esp, Espacos, Perms_poss), Perms),
    positionsEspaco(Esp, VarList),
    append([VarList], [Perms], Perms_poss).
    
-% Testado
+
+% Returns a list of possible permutations for a given list of espacos
 permutacoes_possiveis_espacos(Espacos, Perms_poss_esps) :-
    bagof(Perms, Espaco^Perms^(member(Espaco, Espacos), permutacoes_possiveis_espaco(Espacos, _, Espaco, Perms)), Perms_poss_esps).
 
 
-
-% Testado
+% Returns (index, number), number being a number that's on the same index through out a list of lists.
 numeros_comuns(Lst_Perms, Numeros_comuns) :-
    mat_transposta(Lst_Perms, List), 
    findall(NumCom, (member(Sublist, List), nth1(Count, List, Sublist), numeros_comuns_aux(Sublist, NumCom, Count)), Numeros_comunsDups),
    list_to_set(Numeros_comunsDups, Numeros_comuns). % Remove any duplicates
    
 
-% Testado
+% Applies numeros_comuns/2 to Espacos with permutations, returning espaco with variables unified 
 atribui_comuns(Perms_Possiveis) :-
    maplist(unifyCommonNums, Perms_Possiveis).
 
 
-% Testado
+% Filters impossible permutation from a given EspacoPerms, and returns a new one
 retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis) :-
    bagof([Espaco | [Perms]], possiveisEspPerm(Perms_Possiveis, [Espaco | [Perms]]), Novas_Perms_Possiveis).
    
 
-% Testado
+% Filters a EspacoPerm until it no longer holds impossible permutations
 simplifica(Perms_Possiveis, Novas_Perms_Possiveis) :-
    atribui_comuns(Perms_Possiveis),
    retira_impossiveis(Perms_Possiveis, Novas_Perms_PossiveisAux),
@@ -116,14 +123,14 @@ simplifica(Perms_Possiveis, Novas_Perms_Possiveis) :-
       ).
 
 
-% Testado
+% It takes a puzzle and simplifies all it's EspacoPerms, removing impossible permutations
 inicializa(Puzzle, Perms_Possiveis) :-
    espacos_puzzle(Puzzle, Espacos),
    permutacoes_possiveis_espacos(Espacos, Perms_PossiveisNotSimplified),
    simplifica(Perms_PossiveisNotSimplified, Perms_Possiveis).
 
 
-% Testado
+% Takes an EspacoPerm from a list of possible permutation that has the lowest number of permutations
 escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
    include(spaceWithVariables, Perms_Possiveis, Perms_PossiveisWithVars),
    smallestEspPerms(Perms_PossiveisWithVars, Escolha).
@@ -140,20 +147,43 @@ experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
    select(Slot, Perms_Possiveis, [Esp, [Perm]], Novas_Perms_Possiveis).
 
 
+resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
+   length(Perms_Possiveis, LengthInitial),
+   resolve_aux_recursive(Perms_Possiveis, Novas_Perms_Possiveis),
+   length(Novas_Perms_Possiveis, Length),
+   Length == LengthInitial.
+   
+    
+
+resolve_aux_recursive(Perms_Possiveis, Novas_Perms_Possiveis) :-
+   (escolhe_menos_alternativas(Perms_Possiveis, Escolha) -> experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_PossiveisAux),
+   simplifica(Novas_Perms_PossiveisAux, Perms_PossiveisSimp), resolve_aux_recursive(Perms_PossiveisSimp, Novas_Perms_Possiveis)
+   ;
+   Novas_Perms_Possiveis = Perms_Possiveis   
+   ).  
 
 
 
 %  ###################
 %  AUXILIAR PREDICATES
 %  ################### 
+
+% True if the length of Perms is equal to Length
+isLengthOfPerms(Length, Perms) :-
+   forall(member([_|[Perm]], Perms), (length(Perm, LengthPerm), LengthPerm == Length)).
+
+
+% Returns permutations from a EspacoPerms
 permsEspaco([_|[Perms]], Perms).
 espEspaco([Esp|_], Esp).
 
 
+% Returns number of permutations of a EspacoPerms
 lengthEspPerms([_|[Perms]], Length) :-
    length(Perms, Length).
 
 
+% Returns the EspacoPerm with the lowest number of permutations
 smallestEspPerms(List, Solution) :-
    maplist(lengthEspPerms, List, Lengths),
    min_member(Min, Lengths),
@@ -161,15 +191,18 @@ smallestEspPerms(List, Solution) :-
    nth1(Index, List, Solution).
 
 
+% True if the space has variables
 spaceWithVariables([Espaco | _]) :- 
    include(var, Espaco, Result), 
    \+ (Result == []). 
+
 
 
 possiveisEspPerm(Perms_Possiveis, Novas_Perms_Possiveis) :-
    member([Espaco | [Perms]], Perms_Possiveis),
    bagof(Perm, retira_impossiveis_EspPerm([Espaco | [Perms]], Perm), Perms_PossiveisAux),
    Novas_Perms_Possiveis = [Espaco, Perms_PossiveisAux].
+
 
 
 retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
@@ -180,16 +213,18 @@ retira_impossiveis_EspPerm([Espaco | [Perms]], Nova_Perm_Possivel) :-
    ).
 
 
+% Unifies variables with common number
 unifyCommonNums([Vars|[Perms]]) :-
    numeros_comuns(Perms, CommonNums),
    maplist(unifyCommonNum(Vars), CommonNums).
 
-
+% Unifies a variable with a common number
 unifyCommonNum(Vars, (Index, X)) :-
    nth1(Index, Vars, Var),
    Var = X.
 
 
+% Gets common number from sublist
 numeros_comuns_aux(Sublist, Output, Count) :-
    same(Sublist),
    nth1(1, Sublist, Element),
